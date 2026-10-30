@@ -130,6 +130,19 @@ public class CrateManager {
         }
     }
 
+    
+    public Location placeCrateStructure(Block targetBlock, String name) {
+        return placeCrateStructure(targetBlock, name, "purple");
+    }
+
+    public void addCrate(Location loc, String name) {
+        addCrate(loc, name, "purple");
+    }
+
+    public ItemStack applyRarityLore(ItemStack original, int slot, double chance, String crateName) {
+        return applyRarityLore(original, slot, chance, crateName, "&6");
+    }
+
     public Location placeCrateStructure(Block targetBlock, String name, String color) {
         Location rodLoc = targetBlock.getLocation().clone().add(0, 1, 0);
         Location shulkerLoc = rodLoc.clone().add(0, 1, 0);
