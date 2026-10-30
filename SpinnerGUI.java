@@ -1,8 +1,7 @@
 package com.luckycrates.gui;
 
-import com.luckycrates.manager.CrateManager;
-
 import com.luckycrates.LuckyCratesPlugin;
+import com.luckycrates.manager.CrateManager;
 import com.luckycrates.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -46,7 +45,6 @@ public class SpinnerGUI implements InventoryHolder {
     }
 
     private void buildWeightedTape() {
-        // Pick the actual winning prize using the slot-rarity probability upfront
         this.predeterminedWinner = plugin.getCrateManager().pickWeightedReward();
 
         List<ItemStack> allRewards = plugin.getCrateManager().getAllRewardItems();
@@ -54,13 +52,11 @@ public class SpinnerGUI implements InventoryHolder {
             allRewards.add(new ItemStack(Material.DIRT));
         }
 
-        // Fill tape with visual decoys from the prize pool
         for (int i = 0; i < totalShifts + 15; i++) {
             ItemStack randomDecoy = allRewards.get(ThreadLocalRandom.current().nextInt(allRewards.size()));
             tape.add(randomDecoy.clone());
         }
 
-        // Place the predetermined winner EXACTLY at winning slot (totalShifts + 4)
         int winningTapeIndex = totalShifts + 4;
         if (winningTapeIndex < tape.size()) {
             tape.set(winningTapeIndex, predeterminedWinner.clone());
@@ -185,16 +181,19 @@ public class SpinnerGUI implements InventoryHolder {
 
         givePrize(winningItem);
 
-        String itemName = winningItem.hasItemMeta() && winningItem.getItemMeta().hasDisplayName()
+        // Extract clean item name without repeating crate tags
+        String rawName = winningItem.hasItemMeta() && winningItem.getItemMeta().hasDisplayName()
                 ? winningItem.getItemMeta().getDisplayName()
                 : winningItem.getType().name().replace('_', ' ');
 
-        String winMsg = plugin.getConfig().getString("messages.won-prize", "&a&lWINNER! &fYou received: &e%item% &fx&e%amount%&f!")
-                .replace("%item%", itemName)
-                .replace("%amount%", String.valueOf(winningItem.getAmount()));
+        String cleanName = rawName.replaceAll("(?i)(★[^★]+★\s*)+", "").replaceAll("&[0-9a-fk-or]", "").trim();
+        if (cleanName.isEmpty()) cleanName = winningItem.getType().name().replace('_', ' ');
+
+        // Clean chat message & title without repeating yellow words
+        String winMsg = "&a&lWINNER! &fYou received: &e" + cleanName + " &fx&e" + winningItem.getAmount() + "&f!";
         player.sendMessage(ColorUtil.color(plugin.getConfig().getString("messages.prefix", "") + winMsg));
 
-        player.sendTitle("§a§lPRIZE WON!", "§f" + itemName, 10, 40, 15);
+        player.sendTitle("§a§lPRIZE WON!", "§f" + cleanName, 10, 40, 15);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             plugin.getActiveSpinners().remove(player.getUniqueId());

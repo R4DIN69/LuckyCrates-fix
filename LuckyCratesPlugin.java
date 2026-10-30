@@ -21,31 +21,25 @@ public final class LuckyCratesPlugin extends JavaPlugin {
     private CrateManager crateManager;
     private GiveKeyCommand giveKeyCommand;
 
-    // Track active players currently in the roulette spinner
     private final Set<UUID> activeSpinners = new HashSet<>();
 
     @Override
     public void onEnable() {
         instance = this;
 
-        // Save default config
         saveDefaultConfig();
 
-        // Initialize managers
         this.keyManager = new KeyManager(this);
         this.crateManager = new CrateManager(this);
 
-        // Register commands & listeners
         this.giveKeyCommand = new GiveKeyCommand(this);
         PlaceCommand placeCommand = new PlaceCommand(this);
         LuckyCratesCommand luckyCratesCommand = new LuckyCratesCommand(this);
 
-        // Register event listeners
         Bukkit.getPluginManager().registerEvents(new CrateListener(this), this);
         Bukkit.getPluginManager().registerEvents(new GUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(giveKeyCommand, this);
 
-        // Register command executors
         if (getCommand("place") != null) {
             getCommand("place").setExecutor(placeCommand);
             getCommand("place").setTabCompleter(placeCommand);
@@ -59,12 +53,13 @@ public final class LuckyCratesPlugin extends JavaPlugin {
             getCommand("crate").setTabCompleter(luckyCratesCommand);
         }
 
-        getLogger().info("LuckyCrates has been enabled successfully! (Paper 1.21+)");
+        getLogger().info("LuckyCrates enabled successfully with Holograms & Shulker Pedestals!");
     }
 
     @Override
     public void onDisable() {
         if (crateManager != null) {
+            crateManager.removeAllHolograms();
             crateManager.saveCrates();
         }
         activeSpinners.clear();

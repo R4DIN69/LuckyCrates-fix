@@ -1,12 +1,11 @@
 package com.luckycrates.listener;
 
-import com.luckycrates.manager.CrateManager;
-import com.luckycrates.manager.KeyManager;
-
 import com.luckycrates.LuckyCratesPlugin;
 import com.luckycrates.gui.CrateEditorGUI;
 import com.luckycrates.gui.CratePreviewGUI;
 import com.luckycrates.gui.SpinnerGUI;
+import com.luckycrates.manager.CrateManager;
+import com.luckycrates.manager.KeyManager;
 import com.luckycrates.util.ColorUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -51,16 +50,18 @@ public class CrateListener implements Listener {
 
         Player player = event.getPlayer();
         String crateName = plugin.getCrateManager().getCrateName(loc);
+        String crateColor = plugin.getCrateManager().getCrateColor(loc);
+        String colorCode = plugin.getCrateManager().getColorCode(crateColor);
 
         // 1. LEFT CLICK:
         // Creative Mode -> Open Editor
-        // Normal Player -> Open Crate Preview with Crate Name at top
+        // Normal Player -> Open Crate Preview
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             event.setCancelled(true);
             if (player.getGameMode() == GameMode.CREATIVE && player.hasPermission("luckycrates.admin")) {
-                new CrateEditorGUI(plugin, crateName).open(player);
+                new CrateEditorGUI(plugin, crateName, colorCode).open(player);
             } else {
-                new CratePreviewGUI(plugin, crateName).open(player);
+                new CratePreviewGUI(plugin, colorCode + "&l" + crateName).open(player);
             }
             return;
         }
@@ -72,7 +73,7 @@ public class CrateListener implements Listener {
                 return;
             }
 
-            event.setCancelled(true); // Cancels vanilla shulker box opening
+            event.setCancelled(true);
 
             if (!player.hasPermission("luckycrates.use")) return;
 
@@ -111,7 +112,7 @@ public class CrateListener implements Listener {
     }
 
     // -------------------------------------------------------------
-    // LUCKY KEY PROTECTIONS: Cannot drop, place, or move to containers
+    // KEY PROTECTIONS: Cannot drop, place, or move to containers
     // -------------------------------------------------------------
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

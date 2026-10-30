@@ -1,8 +1,7 @@
 package com.luckycrates.gui;
 
-import com.luckycrates.manager.CrateManager;
-
 import com.luckycrates.LuckyCratesPlugin;
+import com.luckycrates.manager.CrateManager;
 import com.luckycrates.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -19,10 +18,12 @@ public class CrateEditorGUI implements InventoryHolder {
     private final LuckyCratesPlugin plugin;
     private final Inventory inventory;
     private final String crateName;
+    private final String colorCode;
 
-    public CrateEditorGUI(LuckyCratesPlugin plugin, String crateName) {
+    public CrateEditorGUI(LuckyCratesPlugin plugin, String crateName, String colorCode) {
         this.plugin = plugin;
         this.crateName = crateName;
+        this.colorCode = colorCode;
         this.inventory = Bukkit.createInventory(this, 54, ColorUtil.color("&8» &6&lEditor: " + crateName));
 
         Map<Integer, ItemStack> rewards = plugin.getCrateManager().getSlotRewards();
@@ -36,7 +37,7 @@ public class CrateEditorGUI implements InventoryHolder {
     public void open(Player player) {
         player.openInventory(inventory);
         player.sendMessage(ColorUtil.color(plugin.getConfig().getString("messages.prefix", "") +
-                "&6Opened Crate Editor for &e" + crateName + "&6. Items will automatically format with fancy fonts & slot rarity!"));
+                "&6Opened Crate Editor for &e" + crateName + "&6. Place your items freely!"));
         player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.0f);
     }
 
@@ -46,7 +47,7 @@ public class CrateEditorGUI implements InventoryHolder {
             ItemStack item = inventory.getItem(i);
             if (item != null && item.getType() != Material.AIR) {
                 double chance = plugin.getCrateManager().calculatePercentage(i);
-                ItemStack styled = plugin.getCrateManager().applyRarityLore(item, i, chance, crateName);
+                ItemStack styled = plugin.getCrateManager().applyRarityLore(item, i, chance, crateName, colorCode);
                 newRewards.put(i, styled);
             }
         }
@@ -54,7 +55,7 @@ public class CrateEditorGUI implements InventoryHolder {
         plugin.getCrateManager().setSlotRewards(newRewards);
 
         player.sendMessage(ColorUtil.color(plugin.getConfig().getString("messages.prefix", "") +
-                "&aSaved &e" + newRewards.size() + " &arewards for &e" + crateName + "&a! Slot 0 is set to 0.1% Jackpot."));
+                "&aSaved &e" + newRewards.size() + " &arewards for &e" + crateName + "&a! Rarity tiers (Mythic/Uncommon/Common) auto-assigned."));
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.8f, 1.2f);
     }
 
